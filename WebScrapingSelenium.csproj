@@ -57,6 +57,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChromeWebDriver.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="Form.cs">
       <SubType>Form</SubType>

@@ -25,7 +25,7 @@
         private void InitializeComponent() {
             this.btnStart = new System.Windows.Forms.Button();
             this.btnFileOpen = new System.Windows.Forms.Button();
-            this.pbForm = new System.Windows.Forms.ProgressBar();
+            this.progressBar = new System.Windows.Forms.ProgressBar();
             this.textBox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
@@ -51,13 +51,13 @@
             this.btnFileOpen.UseVisualStyleBackColor = true;
             this.btnFileOpen.Click += new System.EventHandler(this.BtnFileOpen_Click);
             // 
-            // pbForm
+            // progressBar
             // 
-            this.pbForm.Location = new System.Drawing.Point(13, 574);
-            this.pbForm.Name = "pbForm";
-            this.pbForm.Size = new System.Drawing.Size(461, 23);
-            this.pbForm.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
-            this.pbForm.TabIndex = 3;
+            this.progressBar.Location = new System.Drawing.Point(13, 574);
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(461, 23);
+            this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
+            this.progressBar.TabIndex = 3;
             // 
             // textBox
             // 
@@ -79,7 +79,7 @@
             this.Controls.Add(this.textBox);
             this.Controls.Add(this.btnFileOpen);
             this.Controls.Add(this.btnStart);
-            this.Controls.Add(this.pbForm);
+            this.Controls.Add(this.progressBar);
             this.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "Form";
             this.Text = "Robo Mailing";
@@ -92,7 +92,7 @@
         #endregion
         private System.Windows.Forms.Button btnStart;
         private System.Windows.Forms.Button btnFileOpen;
-        private System.Windows.Forms.ProgressBar pbForm;
+        private System.Windows.Forms.ProgressBar progressBar;
         private System.Windows.Forms.TextBox textBox;
     }
 }
