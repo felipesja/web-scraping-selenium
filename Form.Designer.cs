@@ -23,27 +23,28 @@
         /// o conteúdo deste método com o editor de código.
         /// </summary>
         private void InitializeComponent() {
-            this.btnStart = new System.Windows.Forms.Button();
+            this.btnStartMailing = new System.Windows.Forms.Button();
             this.btnFileOpen = new System.Windows.Forms.Button();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.textBox = new System.Windows.Forms.TextBox();
+            this.btnStartFatura = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
-            // btnStart
+            // btnStartMailing
             // 
-            this.btnStart.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Bold);
-            this.btnStart.Location = new System.Drawing.Point(132, 603);
-            this.btnStart.Name = "btnStart";
-            this.btnStart.Size = new System.Drawing.Size(106, 32);
-            this.btnStart.TabIndex = 1;
-            this.btnStart.Text = "Iniciar";
-            this.btnStart.UseVisualStyleBackColor = true;
-            this.btnStart.Click += new System.EventHandler(this.BtnStart_Click);
+            this.btnStartMailing.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Bold);
+            this.btnStartMailing.Location = new System.Drawing.Point(73, 603);
+            this.btnStartMailing.Name = "btnStartMailing";
+            this.btnStartMailing.Size = new System.Drawing.Size(106, 32);
+            this.btnStartMailing.TabIndex = 1;
+            this.btnStartMailing.Text = "Robo Mailing";
+            this.btnStartMailing.UseVisualStyleBackColor = true;
+            this.btnStartMailing.Click += new System.EventHandler(this.BtnStart_Click);
             // 
             // btnFileOpen
             // 
             this.btnFileOpen.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnFileOpen.Location = new System.Drawing.Point(244, 603);
+            this.btnFileOpen.Location = new System.Drawing.Point(296, 603);
             this.btnFileOpen.Name = "btnFileOpen";
             this.btnFileOpen.Size = new System.Drawing.Size(106, 32);
             this.btnFileOpen.TabIndex = 2;
@@ -68,19 +69,34 @@
             this.textBox.Multiline = true;
             this.textBox.Name = "textBox";
             this.textBox.ReadOnly = true;
+            this.textBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
             this.textBox.Size = new System.Drawing.Size(462, 556);
             this.textBox.TabIndex = 7;
+            // 
+            // btnStartFatura
+            // 
+            this.btnStartFatura.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnStartFatura.Location = new System.Drawing.Point(185, 603);
+            this.btnStartFatura.Name = "btnStartFatura";
+            this.btnStartFatura.Size = new System.Drawing.Size(105, 32);
+            this.btnStartFatura.TabIndex = 8;
+            this.btnStartFatura.Text = "Robo Fatura";
+            this.btnStartFatura.UseVisualStyleBackColor = true;
+            this.btnStartFatura.Click += new System.EventHandler(this.BtnStartFatura_Click);
             // 
             // Form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(486, 647);
+            this.Controls.Add(this.btnStartFatura);
             this.Controls.Add(this.textBox);
             this.Controls.Add(this.btnFileOpen);
-            this.Controls.Add(this.btnStart);
+            this.Controls.Add(this.btnStartMailing);
             this.Controls.Add(this.progressBar);
             this.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MaximizeBox = false;
             this.Name = "Form";
             this.Text = "Robo Mailing";
             this.Load += new System.EventHandler(this.Form_Load);
@@ -90,10 +106,11 @@
         }
 
         #endregion
-        private System.Windows.Forms.Button btnStart;
+        private System.Windows.Forms.Button btnStartMailing;
         private System.Windows.Forms.Button btnFileOpen;
         private System.Windows.Forms.ProgressBar progressBar;
-        private System.Windows.Forms.TextBox textBox;
+        public System.Windows.Forms.TextBox textBox;
+        private System.Windows.Forms.Button btnStartFatura;
     }
 }
 

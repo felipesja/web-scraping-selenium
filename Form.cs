@@ -1,107 +1,45 @@
 ﻿using OfficeOpenXml;
-using OfficeOpenXml.Style;
 using OpenQA.Selenium;
 using System;
-using System.Collections.Generic;
-using System.IO;
+using System.Threading;
 using System.Windows.Forms;
+using Serilog;
 
 namespace WebScrapingSelenium {
     public partial class Form : System.Windows.Forms.Form {
         public Form() {
             InitializeComponent();
+        }        
+
+        private void Form_Load(object sender, EventArgs e) {            
+            textBox.Text = $"{DateTime.Now} - Selecione a planilha excel para carregar. {Environment.NewLine}";
+            btnStartMailing.Enabled = false;
+            btnStartFatura.Enabled = false;            
         }
 
-        private void Form_Load(object sender, EventArgs e) {
-            textBox.Text = "Selecione a planilha excel para carregar." + Environment.NewLine;
-            btnStart.Enabled = false;
-        }
-
-        private string filePath = string.Empty;
-        private readonly ChromeWebDriver cwDriver = new ChromeWebDriver();
+        private string _filePath;
+        private readonly WebDriver wDriver = new WebDriver();
 
         private void BtnStart_Click(object sender, EventArgs e) {
+            DesabilitarButtons();
+            textBox.AppendText("-------------------------------------------------------------\n");
+            textBox.AppendText($"{DateTime.Now} - Inicializando Robo para Mailing. {Environment.NewLine}");
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.File($"logRobo_{DateTime.Now.ToString("ddMMyyyy_HHmmss")}")
+                .CreateLogger();
+            Log.Information("Inicializando Robo para Mailing.");
+            ProcessarRobo(0);
+        }
 
-            textBox.AppendText("Inicializando Robo." + Environment.NewLine);
-
-            try {
-
-                FileInfo planilhaExcel = new FileInfo(filePath);
-
-                textBox.AppendText("Inicializando o Browser controlado." + Environment.NewLine);
-
-                using (ExcelPackage package = new ExcelPackage(planilhaExcel)) {
-
-                    while (Utils.IsFileOpen(filePath)) {
-                        MessageBox.Show("Verifique se a planilha está aberta", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-                    }
-
-                    // get the first worksheet in the workbook
-                    ExcelWorksheet worksheet = package.Workbook.Worksheets[1];
-
-                    textBox.AppendText("Total de " + worksheet.Dimension.Rows + " telefones para pesquisar." + Environment.NewLine);
-
-                    progressBar.Maximum = worksheet.Dimension.Rows;
-                    progressBar.Step = 1;
-
-                    ExcelWorksheet worksheet2 = package.Workbook.Worksheets.Add("ResultadoConsulta");
-
-                    worksheet2.Cells[1, 1].Value = "Nome";
-                    worksheet2.Cells[1, 2].Value = "CPF";
-                    worksheet2.Cells[1, 3].Value = "Linha";
-                    worksheet2.Cells[1, 4].Value = "Plano";
-                    worksheet2.Cells[1, 5].Value = "Status";
-
-                    IList<IWebElement> listaDados = null;
-                    int newRow = 0;
-
-                    for (int row = 1; row <= worksheet.Dimension.Rows; row++) {
-
-                        int col = 1;
-
-                        cwDriver.EnviarRequisicaoPesquisa(worksheet.Cells[row, col].Value.ToString());
-
-                        try {
-
-                            listaDados = cwDriver.ListaResultadoPesquisa();
-
-                            textBox.AppendText("Proprietário do telefone " + worksheet.Cells[row, col].Value.ToString() + " é " + listaDados[0].Text + Environment.NewLine);                            
-
-                            newRow = worksheet2.Dimension.Rows + 1;
-
-                            worksheet2.Cells[newRow, 1].Value = listaDados[0].Text; //NOME
-                            worksheet2.Cells[newRow, 2].Value = listaDados[7].Text; //CPF
-                            worksheet2.Cells[newRow, 3].Value = listaDados[21].Text; //Linha
-                            worksheet2.Cells[newRow, 4].Value = listaDados[25].Text; //Plano
-                            worksheet2.Cells[newRow, 5].Value = listaDados[27].Text; //Status
-
-                            if (row % 10 == 0) {
-                                package.Save();
-                            }
-                        }
-                        catch {
-                            textBox.AppendText("Timeout.\n");
-                        }
-
-                        textBox.ScrollToCaret();
-                        progressBar.PerformStep();
-                    }
-
-                    worksheet2.Cells.AutoFitColumns(0);
-                    worksheet2.Cells.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-
-                    package.Save();
-
-                    textBox.AppendText("Telefones processados com sucesso.");
-                }
-            }
-            catch (Exception ex) {
-                MessageBox.Show("Ocorreu um problema inesperado: \n\n" + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                textBox.AppendText("Ocorreu um problema inesperado: \n");
-                textBox.AppendText(ex.Message + Environment.NewLine);
-            }
-
-            cwDriver.FecharChromeDriver();
+        private void BtnStartFatura_Click(object sender, EventArgs e) {            
+            DesabilitarButtons();
+            textBox.AppendText("-------------------------------------------------------------\n");
+            textBox.AppendText($"{DateTime.Now} - Inicializando Robo para Fatura. {Environment.NewLine}");
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.File($"logRobo_{DateTime.Now.ToString("ddMMyyyy_HHmmss")}")
+                .CreateLogger();
+            Log.Information("Inicializando Robo para Fatura.");
+            ProcessarRobo(1);
         }
 
         private void BtnFileOpen_Click(object sender, EventArgs e) {
@@ -114,15 +52,118 @@ namespace WebScrapingSelenium {
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK) {
                     //Get the path of specified file
-                    filePath = openFileDialog.FileName;
-                    textBox.AppendText("Planilha Carregada." + Environment.NewLine);
-                    btnStart.Enabled = true;
+                    _filePath = openFileDialog.FileName;
+                    textBox.AppendText(DateTime.Now + " - Planilha Carregada." + Environment.NewLine);
+                    HabilitarButtons();
 
-                    cwDriver.AbrirChromeDriver();
+                    wDriver.AbrirWebDriver();
                 }
             }
-
             TopMost = true;
         }
+
+        private void ProcessarRobo(int tipoRobo) {
+            //0 - Mailing 1 - Fatura
+
+            string numeroLinha = null;
+            int linhasProcessadas = 0;
+            double taxaInfoProcessadas;
+            Planilha planilhaExcel = new Planilha(_filePath);            
+
+            try {
+
+                ExcelWorksheet worksheetLinha = planilhaExcel.ObterExcelWorksheet(1);
+
+                textBox.AppendText($"{DateTime.Now} - Total de {worksheetLinha.Dimension.Rows} Linhas para consultar. {Environment.NewLine}");
+                Log.Debug($"Total de {worksheetLinha.Dimension.Rows} Linhas para consultar.");
+                progressBar.Maximum = worksheetLinha.Dimension.Rows;
+                progressBar.Value = 0;
+
+                taxaInfoProcessadas = Math.Round(worksheetLinha.Dimension.Rows * 0.10);
+
+                planilhaExcel.CriarExcelWorkbookResultado(tipoRobo);
+                
+                int col = 1;
+                string mensagem = "Ok";
+
+                for (int row = 1; row <= worksheetLinha.Dimension.Rows; row++) {
+                    
+                    numeroLinha = worksheetLinha.Cells[row, col].Value.ToString();
+                    Cliente cliente = new Cliente();
+
+                    if (numeroLinha.Length == 11) {
+
+                        wDriver.EnviarRequisicaoPesquisa(numeroLinha);
+                        Thread.Sleep(3000);
+
+                        try {                           
+                            cliente = wDriver.ObterDadosCliente(tipoRobo);                            
+                            linhasProcessadas++;
+                            mensagem = "Ok";
+                        }
+                        catch (WebDriverTimeoutException ex) {                            
+                            Log.Error(ex, $"Não foi possível consultar a Linha: {numeroLinha}. Necessário verificar manualmente.");
+                            mensagem = "Excedeu o tempo de espera para consulta. Necessário reprocessar.";
+                        }
+                        catch (Exception ex) {
+                            textBox.AppendText($"{DateTime.Now} - Erro inesperado na Linha {numeroLinha}. Verificar posteriormente arquivo de Log.\n");                            
+                            Log.Error(ex, $"Erro inesperado na Linha {numeroLinha}: ");
+                            mensagem = "Erro inesperado na Linha. Verificar posteriormente arquivo de Log.";
+                        }
+                        finally {                            
+                            wDriver.RetirarAlertasPopUp(numeroLinha, ref mensagem);
+                            if (String.IsNullOrEmpty(cliente.Linha)) {
+                                cliente.Linha = numeroLinha;
+                            }
+                            planilhaExcel.InserirDadosCliente(cliente, mensagem, tipoRobo);
+                        }
+                    }
+                    else {
+                        textBox.AppendText($"{DateTime.Now} - Número de linha inválido: {numeroLinha}. Necessário verificar manualmente.\n");
+                        Log.Debug($"Número de linha inválido: {numeroLinha}. Necessário verificar manualmente.");
+                    }
+
+                    textBox.ScrollToCaret();
+
+                    if (row < progressBar.Maximum) {
+                        progressBar.Value = row + 1; //bug fix 
+                        progressBar.Value = row;
+                    }
+                    else {
+                        progressBar.Value = row;
+                    }
+
+                    if (row % taxaInfoProcessadas == 0) {
+                        textBox.AppendText($"{DateTime.Now} - {row} Linhas processadas.\n");
+                    }
+
+                }
+
+                planilhaExcel.SalvarPlanilha();
+            }
+            catch (Exception ex) {
+                MessageBox.Show("Ocorreu um problema inesperado: \n\n" + ex.Message, "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                textBox.AppendText($"{DateTime.Now} - Ocorreu um problema inesperado na linha {numeroLinha}: \n");                
+                Log.Error(ex, $"Ocorreu um problema inesperado na linha {numeroLinha}. Processo abortado.");
+                progressBar.Value = progressBar.Maximum;
+            }
+            //cwDriver.FecharChromeDriver();
+            textBox.AppendText($"{DateTime.Now} - Total de {linhasProcessadas} Linhas válidas processadas.\n");
+            Log.Information($"Total de {linhasProcessadas} Linhas válidas processadas.");
+            HabilitarButtons();
+            Log.CloseAndFlush();
+        }
+
+        private void HabilitarButtons() {
+            btnStartMailing.Enabled = true;
+            btnStartFatura.Enabled = true;
+            btnFileOpen.Enabled = true;
+        }
+
+        private void DesabilitarButtons() {
+            btnStartMailing.Enabled = false;
+            btnStartFatura.Enabled = false;
+            btnFileOpen.Enabled = false;
+        }        
     }
 }
