@@ -18,6 +18,7 @@ namespace WebScrapingSelenium {
         }
 
         private string _filePath;
+        private string _filePathResult;
         private readonly WebDriver wDriver = new WebDriver();
 
         private void BtnStart_Click(object sender, EventArgs e) {
@@ -68,7 +69,7 @@ namespace WebScrapingSelenium {
             string numeroLinha = null;
             int linhasProcessadas = 0;
             double taxaInfoProcessadas;
-            Planilha planilhaExcel = new Planilha(_filePath);            
+            Planilha planilhaExcel = new Planilha(_filePath);
 
             try {
 
@@ -81,7 +82,7 @@ namespace WebScrapingSelenium {
 
                 taxaInfoProcessadas = Math.Round(worksheetLinha.Dimension.Rows * 0.10);
 
-                planilhaExcel.CriarExcelWorkbookResultado(tipoRobo);
+                planilhaExcel.CriarExcelWorkbookResultado(tipoRobo, _filePathResult);
                 
                 int col = 1;
                 string mensagem = "Ok";
@@ -158,12 +159,23 @@ namespace WebScrapingSelenium {
             btnStartMailing.Enabled = true;
             btnStartFatura.Enabled = true;
             btnFileOpen.Enabled = true;
+            btnFileSave.Enabled = true;
         }
 
         private void DesabilitarButtons() {
             btnStartMailing.Enabled = false;
             btnStartFatura.Enabled = false;
             btnFileOpen.Enabled = false;
-        }        
+            btnFileSave.Enabled = false;
+        }      
+
+        private void BtnFileSave_Click(object sender, EventArgs e) {
+            // Show the FolderBrowserDialog.
+            DialogResult result = folderBrowserDialog1.ShowDialog();
+            if (result == DialogResult.OK) {
+                _filePathResult = folderBrowserDialog1.SelectedPath;
+                textBox1.Text = _filePathResult;
+            }
+        }
     }
 }

@@ -1,8 +1,6 @@
 ﻿using OfficeOpenXml;
 using OfficeOpenXml.Style;
-using OpenQA.Selenium;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 
@@ -29,7 +27,7 @@ namespace WebScrapingSelenium {
             return package.Workbook.Worksheets[index];
         }
 
-        public void CriarExcelWorkbookResultado(int tipoRobo) {
+        public void CriarExcelWorkbookResultado(int tipoRobo, string filePathResult) {
             packageResultado = new ExcelPackage();
             worksheetResultado = packageResultado.Workbook.Worksheets.Add("Resultado");
 
@@ -57,7 +55,7 @@ namespace WebScrapingSelenium {
                 worksheetResultado.Cells[1, 13].Value = "STATUS_CONTA3";
             }
 
-            packageResultado.SaveAs(new FileInfo($"Resultado_{DateTime.Now.ToString("ddMMyyyy_HHmmss")}.xlsx"));
+            packageResultado.SaveAs(new FileInfo($"{filePathResult}//Resultado_{DateTime.Now.ToString("ddMMyyyy_HHmmss")}.xlsx"));
         }
 
         public void InserirDadosCliente(Cliente cliente, string mensagem, int tipoRobo) {
